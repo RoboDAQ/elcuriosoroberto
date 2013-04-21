@@ -50,13 +50,13 @@ public class EnviaCoordenadas extends MouseAdapter {
         
         if(y < 0) {
         	System.out.println("Giro 180");
-        	//this.conexion(x, y, tmsLin, 2600);
+        	this.conexion(x, y, tmsLin, 2600);
         }
         
         tmsAng = Math.atan( y / x ) * 180 * t2[angularSpeed] / a2[angularSpeed];
         System.out.println("tms Angular: " + tmsAng);
         
-        //this.conexion(x, y, tmsLin, tmsAng);
+        this.conexion(x, y, tmsLin, tmsAng);
     }
     
     public void setZoom(int zoom) {
