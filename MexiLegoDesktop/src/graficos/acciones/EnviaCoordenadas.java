@@ -23,6 +23,8 @@ public class EnviaCoordenadas extends MouseAdapter {
 	
 	private static final double[] t2 = {650.0, 1300.0, 1950.0, 2600.0, 3250.0};
 	private static final double[] a2 = {45, 90, 135, 180, 225};
+	
+	private NXTConnector connector = null;
     
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -71,35 +73,43 @@ public class EnviaCoordenadas extends MouseAdapter {
     	this.angularSpeed = angularSpeed;
     }
     
+    public void initConnector() {
+    	NXTConnector conn = new NXTConnector();
+	       
+        conn.addLogListener(new NXTCommLogListener(){
+
+            public void logEvent(String message) {
+                System.out.println("BTSend Log.listener: "+message);
+            }
+
+            public void logEvent(Throwable throwable) {
+                System.out.println("BTSend Log.listener - stack trace: ");
+                 throwable.printStackTrace();
+            }
+           
+        }
+        );
+        // Connect to any NXT over Bluetooth
+        boolean connected = conn.connectTo("btspp://");
+   
+       
+        if (!connected) {
+            System.err.println("Failed to connect to any NXT");
+            System.exit(1);
+        }
+    }
+    
+    public void releaseConnector() {
+    	try {
+			connector.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
     public void conexion(double x, double y, double tmsLin, double tmsAng) {
     	try {
-    		NXTConnector conn = new NXTConnector();
-    	       
-            conn.addLogListener(new NXTCommLogListener(){
-
-                public void logEvent(String message) {
-                    System.out.println("BTSend Log.listener: "+message);
-                   
-                }
-
-                public void logEvent(Throwable throwable) {
-                    System.out.println("BTSend Log.listener - stack trace: ");
-                     throwable.printStackTrace();
-                   
-                }
-               
-            }
-            );
-            // Connect to any NXT over Bluetooth
-            boolean connected = conn.connectTo("btspp://");
-       
-           
-            if (!connected) {
-                System.err.println("Failed to connect to any NXT");
-                System.exit(1);
-            }
-           
-            DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+    		DataOutputStream dos = new DataOutputStream(connector.getOutputStream());
             
             String cmd="cmd:" + x + "@" + y + "@" + tmsLin + "@" + tmsAng;  // Declare & initialize a String to hold input.  
 
@@ -121,5 +131,4 @@ public class EnviaCoordenadas extends MouseAdapter {
     		e1.printStackTrace();
     	}
     }
-
 }

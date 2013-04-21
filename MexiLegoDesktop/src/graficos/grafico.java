@@ -17,12 +17,19 @@ import javax.swing.event.ChangeEvent;
  * @author Omar
  */
 public class grafico extends javax.swing.JPanel {
+	
+	public void closeConnection() {
+		enviaCoordenadas.releaseConnector();
+	}
 
     /**
      * Creates new form grafico
      */
     public grafico() {
         initComponents();
+        
+        enviaCoordenadas = new EnviaCoordenadas();
+        enviaCoordenadas.initConnector();
         
         panelRadar.addMouseListener(enviaCoordenadas);
         
@@ -78,7 +85,6 @@ public class grafico extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        enviaCoordenadas = new EnviaCoordenadas();
 
         legoLink1.setMinimumSize(new java.awt.Dimension(70, 70));
 
