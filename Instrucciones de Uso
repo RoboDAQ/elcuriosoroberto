@@ -1,0 +1,20 @@
+INSTRUCCIONES! 
+
+Contar con la Aplicacion de Space Challenge APP para manejar el robot (aplicacion creada para el uso de robots autonomous de LEGO). Una ves en funcionamiento y teniendo la aplicacion cargada comenzamos con la conexion
+
+
+1.- Se revisa el estatus de Bluetooth
+2.- Se entra a la aplicacion MexiLEGO
+3.- Se conecta con el equipo y se activa la simulacion
+4.- Se dan ordenes al robot para que actue (con un periodo de tiempo de retraso ajustable)  
+
+
+Manipulacion:
+
+
+Control de 2 dimensiones
+
+Aceleracion: Dependiendo de las instrucciones que se le den, ya que la aplicacion mandara estos datos al robot y este actuara con una diferencia de tiempo simulando una maniobra de el CURIOSITY en MARTE!
+
+
+--------------
