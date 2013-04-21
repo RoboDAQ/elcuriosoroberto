@@ -74,9 +74,9 @@ public class EnviaCoordenadas extends MouseAdapter {
     }
     
     public void initConnector() {
-    	NXTConnector conn = new NXTConnector();
+    	connector = new NXTConnector();
 	       
-        conn.addLogListener(new NXTCommLogListener(){
+        connector.addLogListener(new NXTCommLogListener(){
 
             public void logEvent(String message) {
                 System.out.println("BTSend Log.listener: "+message);
@@ -90,7 +90,7 @@ public class EnviaCoordenadas extends MouseAdapter {
         }
         );
         // Connect to any NXT over Bluetooth
-        boolean connected = conn.connectTo("btspp://");
+        boolean connected = connector.connectTo("btspp://");
    
        
         if (!connected) {
