@@ -10,8 +10,8 @@ import graficos.Constants;
 
 
 /**
- * Env√≠a las coordenadas del radar.
- * @author Diego Hern√°ndez.
+ * EnvÌa las coordenadas del radar.
+ * @author Diego Hern·ndez.
  */
 public class EnviaCoordenadas extends MouseAdapter {
 	private int zoom = Constants.ZOOM_DEFAULT;
@@ -24,41 +24,112 @@ public class EnviaCoordenadas extends MouseAdapter {
 	private static final double[] t2 = {650.0, 1300.0, 1950.0, 2600.0, 3250.0};
 	private static final double[] a2 = {45, 90, 135, 180, 225};
 	
-	private NXTConnector connector = null;
+	
+	DataOutputStream dos = null;
     
-    @Override
+    public EnviaCoordenadas() {
+		super();
+		
+		NXTConnector conn = new NXTConnector();
+	       
+        conn.addLogListener(new NXTCommLogListener(){
+
+            public void logEvent(String message) {
+                System.out.println("BTSend Log.listener: "+message);
+               
+            }
+
+            public void logEvent(Throwable throwable) {
+                System.out.println("BTSend Log.listener - stack trace: ");
+                 throwable.printStackTrace();
+               
+            }
+           
+        }
+        );
+        // Connect to any NXT over Bluetooth
+        boolean connected = conn.connectTo("btspp://");
+   
+       
+        if (!connected) {
+            System.err.println("Failed to connect to any NXT");
+            System.exit(1);
+        }
+       
+        dos = new DataOutputStream(conn.getOutputStream());
+
+	
+	}
+
+	@Override
     public void mouseClicked(MouseEvent e) {
-    	
-    	System.out.println("Zoom: " + zoom);
-    	System.out.println("Distancia: " + d1[speed]);
-    	System.out.println("Tiempo linear: " + t1[speed]);
-    	System.out.println("Angulo: " + a2[angularSpeed]);
-    	System.out.println("Tiempo angular: " + t2[angularSpeed]);
     	
         Component c = (Component) e.getSource();
         
-        double x = e.getX() - (c.getWidth()/2);
-        double y = (c.getHeight()/2) - e.getY();
+        boolean clockwise = true;
         
-        x = (x / c.getWidth()) * zoom;
-        y = (y / c.getHeight()) * zoom;
+       int xFactor = c.getWidth()/2;
+       int yFactor = c.getHeight()/2;  
         
-        double tmsLin = Math.sqrt( Math.pow(y, 2.0) + Math.pow(x, 2.0) ) * t1[speed] / d1[speed];
-        double tmsAng = 0;
+       int x = e.getX() - xFactor;
+       int y = yFactor - e.getY();
         
-        System.out.println("X: " + x);
-        System.out.println("Y: " + y);
-        System.out.println("tms Linear: " + tmsLin);
+        x = (int)((x / (double)xFactor) * zoom);
+        y = (int)((y / (double)yFactor) * zoom);
         
-        if(y < 0) {
-        	System.out.println("Giro 180");
-        	this.conexion(x, y, tmsLin, 2600);
+        System.out.println("(" + x + "," + y + ")@" + zoom); 
+        
+       int angle = (int)(Math.toDegrees(Math.atan(y / (double)x)));
+       System.out.println("PRE Angle: " + angle);
+       int angularSpeed=0;
+       
+       if(x > 0 && y > 0){
+    	   clockwise = true;
+    	   angle = 90 - angle;    	   
+       }else if (x < 0 && y > 0){
+    	   clockwise = false;
+    	   angle = 90 - angle;
+       }else if (x < 0 && y < 0){
+    	   clockwise = false;
+    	   angle = 90 + angle;
+       }else if (x > 0 && y < 0){
+    	   clockwise = true;
+    	   angle = 90 - angle;
+       }       
+       
+       
+       if(!clockwise){
+    	   this.angularSpeed = this.angularSpeed * -1;
+       }
+       
+       
+       System.out.println("Angle: " + angle);
+       
+       int magnitude =  (int)(Math.sqrt( Math.pow(x, 2.0) + Math.pow(y, 2.0) ));
+       System.out.println("Magnitude: " + magnitude);
+       
+       int turnTime = angle * 468 / 90;
+       
+       System.out.println("TurnTime: " + turnTime);
+       
+       int forwardTime = magnitude * 300;
+       
+       System.out.println("forwardTime: " + forwardTime);
+       
+        //double tmsLin = Math.sqrt( Math.pow(x, 2.0) + Math.pow(y, 2.0) ) * t1[speed] / d1[speed]; 
+        //double tmsAng = Math.toDegrees(Math.atan( Math.abs(y / x) )) * t2[angularSpeed] / a2[angularSpeed];
+        
+        
+        if(x < 0){
+        	this.angularSpeed = -this.angularSpeed;
         }
+         
         
-        tmsAng = Math.atan( y / x ) * 180 * t2[angularSpeed] / a2[angularSpeed];
-        System.out.println("tms Angular: " + tmsAng);
-        
-        this.conexion(x, y, tmsLin, tmsAng);
+        try {
+			this.conexion(turnTime, forwardTime);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
     }
     
     public void setZoom(int zoom) {
@@ -73,62 +144,28 @@ public class EnviaCoordenadas extends MouseAdapter {
     	this.angularSpeed = angularSpeed;
     }
     
-    public void initConnector() {
-    	connector = new NXTConnector();
-	       
-        connector.addLogListener(new NXTCommLogListener(){
+    public void conexion(int rotationTime, int translationTime) throws Exception {
+                
+        String cmd="cmd:" + angularSpeed + "@" + speed + "@" + rotationTime + "@" + translationTime;  // Declare & initialize a String to hold input.  
 
-            public void logEvent(String message) {
-                System.out.println("BTSend Log.listener: "+message);
-            }
-
-            public void logEvent(Throwable throwable) {
-                System.out.println("BTSend Log.listener - stack trace: ");
-                 throwable.printStackTrace();
-            }
-           
-        }
-        );
-        // Connect to any NXT over Bluetooth
-        boolean connected = connector.connectTo("btspp://");
-   
-       
-        if (!connected) {
-            System.err.println("Failed to connect to any NXT");
-            System.exit(1);
-        }
-    }
-    
-    public void releaseConnector() {
-    	try {
-			connector.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public void conexion(double x, double y, double tmsLin, double tmsAng) {
-    	try {
-    		DataOutputStream dos = new DataOutputStream(connector.getOutputStream());
-            
-            String cmd="cmd:" + x + "@" + y + "@" + tmsLin + "@" + tmsAng;  // Declare & initialize a String to hold input.  
-
-                try {
-                    System.out.print("Sending ");
-                    for(int i=0; i < cmd.length(); i++){
-                        System.out.print(cmd.charAt(i));
-                        dos.writeChar(cmd.charAt(i));                   
-                    }
-                    dos.writeChar('\n');
-                    System.out.println();
-                    dos.flush();   
-                } catch (IOException ioe) {
-                    System.out.println("IO Exception writing bytes:");
-                    System.out.println(ioe.getMessage());
+            try {
+                System.out.print("Sending ");
+                for(int i=0; i < cmd.length(); i++){
+                    System.out.print(cmd.charAt(i));
+                    dos.writeChar(cmd.charAt(i));                   
                 }
-    	}
-    	catch(Exception e1) {
-    		e1.printStackTrace();
-    	}
+                dos.writeChar('\n');
+                System.out.println();
+                dos.flush();   
+            } catch (Exception ioe) {
+                System.out.println("IO Exception writing bytes:");
+                System.out.println(ioe.getMessage());
+            }
+        
     }
+
+	
+    
+    
+
 }

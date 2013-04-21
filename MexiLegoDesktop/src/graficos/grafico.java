@@ -19,7 +19,7 @@ import javax.swing.event.ChangeEvent;
 public class grafico extends javax.swing.JPanel {
 	
 	public void closeConnection() {
-		enviaCoordenadas.releaseConnector();
+		//enviaCoordenadas.releaseConnector();
 	}
 
     /**
@@ -29,7 +29,7 @@ public class grafico extends javax.swing.JPanel {
         initComponents();
         
         enviaCoordenadas = new EnviaCoordenadas();
-        enviaCoordenadas.initConnector();
+        //enviaCoordenadas.initConnector();
         
         panelRadar.addMouseListener(enviaCoordenadas);
         
